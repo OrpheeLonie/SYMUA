@@ -1,4 +1,4 @@
-globls [
+globals [
   selected-car   ; the currently selected car
   lanes          ; a list of the y coordinates of different lanes
 ]
@@ -192,4 +192,4 @@ end
 
 
 ; Copyright 1998 Uri Wilensky.
-; See Info tab for full copyright and license.a
+; See Info tab for full copyright and license.
