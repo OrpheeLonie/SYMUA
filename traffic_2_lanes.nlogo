@@ -8,6 +8,7 @@ turtles-own [
   top-speed     ; the maximum speed of the car (different for all cars)
   target-lane   ; the desired lane of the car
   patience      ; the driver's current level of patience
+  a-changer     ; conteur pour que la voiture puisse rechanger de ligne apres avoir changé
 ]
 
 to setup
@@ -36,6 +37,7 @@ to create-or-remove-cars
     set top-speed 0.5 + random-float 0.5
     set speed 0.5
     set patience random max-patience
+    set a-changer random max-a-changer
   ]
 
   if count turtles > number-of-cars [
@@ -100,7 +102,8 @@ end
 to go
   create-or-remove-cars
   ask turtles [ move-forward ]
-  ask turtles with [ patience <= 0 ] [ choose-new-lane ]
+  ask turtles [ choose-new-lane-right]
+  ask turtles with [ patience <= 0 ] [ choose-new-lane-left]
   ask turtles with [ ycor != target-lane ] [ move-to-target-lane ]
   tick
 end
@@ -143,9 +146,33 @@ to choose-new-lane ; turtle procedure
   ]
 end
 
+to choose-new-lane-right ; turtle procedure
+  ; Choose a new lane among those with the minimum
+  ; distance to your current lane (i.e., your ycor).
+  set a-changer a-changer - 1
+
+  if  ycor - 1 > last lanes and a-changer < 1 and speed >= top-speed[
+    set target-lane ycor - 2
+    set a-changer max-a-changer
+    set patience max-patience]
+
+end
+
+to choose-new-lane-left ; turtle procedure
+  ; Choose a new lane among those with the minimum
+  ; distance to your current lane (i.e., your ycor).
+  set a-changer a-changer - 1
+
+  if  ycor + 1 < first lanes and a-changer < 1 [
+    set target-lane ycor + 2
+    set a-changer max-a-changer
+    set patience max-patience]
+end
+
+
 to move-to-target-lane ; turtle procedure
   set heading ifelse-value target-lane < ycor [ 180 ] [ 0 ]
-  let blocking-cars other turtles in-cone (1 + abs (ycor - target-lane)) 180 with [ x-distance <= 1 ]
+  let blocking-cars other turtles in-cone (1 + abs (ycor - target-lane)) 180 with [ x-distance <= max (list( speed * 2)( 1))] ; ajout du speed *2
   let blocking-car min-one-of blocking-cars [ distance myself ]
   ifelse blocking-car = nobody [
     forward 0.2
@@ -180,14 +207,14 @@ end
 
 to-report car-color
   ; give all cars a blueish color, but still make them distinguishable
-  report one-of [ blue cyan sky ] + 1.5 + random-float 1.0
+  report one-of [ blue cyan sky ] + 1.5 + random-float 5.0
 end
 
 to-report number-of-lanes
   ; To make the number of lanes easily adjustable, remove this
   ; reporter and create a slider on the interface with the same
   ; name. 8 lanes is the maximum that currently fit in the view.
-  report 2
+  report 3
 end
 
 
@@ -309,7 +336,7 @@ number-of-cars
 number-of-cars
 1
 number-of-lanes * world-width
-40.0
+92.0
 1
 1
 NIL
@@ -475,8 +502,23 @@ max-patience
 max-patience
 1
 100
-50.0
+9.0
 1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1140
+380
+1312
+413
+max-a-changer
+max-a-changer
+20
+1000
+200.0
+20
 1
 NIL
 HORIZONTAL
